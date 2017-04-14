@@ -668,12 +668,9 @@ bool CuDnnConvolutionEngineFactory<ElemType>::IsSupported(DEVICEID_TYPE deviceId
     // padding due to auto-padding and choose the reference convolution implementation instead
     if (poolKind == PoolKind::None)     // only for convolution, pooling seems fine
     {
-        for (int i = 0; i < kernelRank; i++)
+        for (int i = 0; i < kernelRank - 1; i++)
         {
-            if (geometry->GetAutoPad(i))
-                retVal = retVal && (kernel[i] % 2 != 0);  // make sure kernel size is odd
-            else
-                retVal = retVal && (geometry->GetLowerPad(i) == geometry->GetUpperPad(i));   // lower pad is same as upper pad
+            retVal = retVal && (geometry->GetLowerPad(i) == geometry->GetUpperPad(i));   // lower pad is same as upper pad
         }
     }
     return retVal;
