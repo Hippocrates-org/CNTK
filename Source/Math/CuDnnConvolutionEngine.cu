@@ -668,9 +668,14 @@ bool CuDnnConvolutionEngineFactory<ElemType>::IsSupported(DEVICEID_TYPE deviceId
     // padding due to auto-padding and choose the reference convolution implementation instead
     if (poolKind == PoolKind::None)     // only for convolution, pooling seems fine
     {
-        for (int i = 0; i < kernelRank - 1; i++)
+        for (int i = 0; i < kernelRank; i++)
         {
-            retVal = retVal && (geometry->GetLowerPad(i) == geometry->GetUpperPad(i));   // lower pad is same as upper pad
+            if (geometry->GetLowerPad(i) < geometry->GetUpperPad(i))
+            {
+                fprintf(stderr, "Detected asymmetric padding issue (lowerPad < higherPad), cuDNN will not be able to produce correct result. Switch to reference engine (VERY SLOW). \n");
+                retVal = false; 
+                break; 
+            }
         }
     }
     return retVal;
